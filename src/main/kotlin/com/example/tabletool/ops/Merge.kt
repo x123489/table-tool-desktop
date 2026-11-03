@@ -25,26 +25,31 @@ fun mergeAppend(sheets: List<Sheet>): Sheet {
     return Sheet(base.fileName, "合并(纵向)", headers, out)
 }
 
-/** 按关键列 join：相同关键值的行横向合并（外连接），其余列追加（关键列不重复）。 */
-fun mergeByKey(sheets: List<Sheet>, keyColIndex: Int): Sheet {
+/** 按关键列 join：相同关键值的行横向合并（外连接），其余列追加（关键列不重复）。
+ *  keyColName 按“列名”对齐，因此不同表的同名列即使列序不同也能正确关联（如工资表+履历表按“姓名”合并）。 */
+fun mergeByKey(sheets: List<Sheet>, keyColName: String): Sheet {
     require(sheets.isNotEmpty()) { "至少需要选择一张表" }
     val base = sheets.first()
+    // 每张表各自解析关键列索引（列序不同也能对齐）
+    val keyIdx = sheets.map { s -> val i = s.headers.indexOf(keyColName); if (i < 0) 0 else i }
     val outHeaders = base.headers.toMutableList()
-    sheets.drop(1).forEach { s ->
-        s.headers.forEachIndexed { i, h -> if (i != keyColIndex && h !in outHeaders) outHeaders.add(h) }
+    sheets.forEachIndexed { si, s ->
+        if (si == 0) return@forEachIndexed
+        s.headers.forEachIndexed { i, h -> if (i != keyIdx[si] && h !in outHeaders) outHeaders.add(h) }
     }
-    val baseKeyName = base.headers.getOrNull(keyColIndex) ?: ""
+    val baseKeyName = base.headers.getOrNull(keyIdx[0]) ?: keyColName
     val map = LinkedHashMap<String, MutableList<String>>()
-    sheets.forEach { s ->
-        val otherHeaders = s.headers.mapIndexed { i, h -> i to h }.filter { it.first != keyColIndex }
+    sheets.forEachIndexed { si, s ->
+        val ki = keyIdx[si]
+        val otherHeaders = s.headers.mapIndexed { i, h -> i to h }.filter { it.first != ki }
         s.rows.forEach { row ->
-            val key = row.getOrNull(keyColIndex) ?: ""
-            var rec = map[key]
+            val k = row.getOrNull(ki) ?: ""
+            var rec = map[k]
             if (rec == null) {
                 rec = MutableList(outHeaders.size) { "" }
                 val baseKeyIdx = outHeaders.indexOf(baseKeyName)
-                if (baseKeyIdx >= 0) rec[baseKeyIdx] = key
-                map[key] = rec
+                if (baseKeyIdx >= 0) rec[baseKeyIdx] = k
+                map[k] = rec
             }
             otherHeaders.forEach { (ci, h) ->
                 val oi = outHeaders.indexOf(h)
