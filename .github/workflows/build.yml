@@ -25,6 +25,9 @@ jobs:
         if: failure()
         shell: pwsh
         run: |
+          Write-Host "=== createDistributable.args.txt ==="
+          Get-Content build/compose/tmp/createDistributable.args.txt -ErrorAction SilentlyContinue
+          Write-Host "=== logs dir ==="
           Get-ChildItem build/compose/logs -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "=== $($_.FullName) ==="; Get-Content $_.FullName -ErrorAction SilentlyContinue }
       - name: Zip Windows artifact
         shell: pwsh
