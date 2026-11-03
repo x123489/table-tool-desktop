@@ -5,7 +5,6 @@ import com.example.tabletool.model.Sheet
 import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.DateUtil
 import org.apache.poi.ss.usermodel.WorkbookFactory
-import com.github.doyaaaaaken.kotlin_csv.reader.CsvReader
 import java.io.File
 
 object Importer {
@@ -45,7 +44,7 @@ object Importer {
     }
 
     private fun importCsv(file: File): ImportedFile {
-        val all = CsvReader().readAll(file)
+        val all = CsvUtil.readAll(file)
         if (all.isEmpty()) {
             return ImportedFile(file.name, listOf(Sheet(file.name, file.nameWithoutExtension, emptyList(), emptyList())))
         }
