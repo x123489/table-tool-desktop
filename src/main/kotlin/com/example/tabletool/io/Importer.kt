@@ -3,7 +3,9 @@ package com.example.tabletool.io
 import com.example.tabletool.model.ImportedFile
 import com.example.tabletool.model.Sheet
 import org.apache.poi.ss.usermodel.CellType
+import org.apache.poi.ss.usermodel.DataFormatter
 import org.apache.poi.ss.usermodel.DateUtil
+import org.apache.poi.ss.usermodel.FormulaError
 import org.apache.poi.ss.usermodel.WorkbookFactory
 import java.io.File
 
@@ -53,19 +55,51 @@ object Importer {
         return ImportedFile(file.name, listOf(Sheet(file.name, file.nameWithoutExtension, headers, rows)))
     }
 
+    private val formatter = DataFormatter()
+
     private fun cellString(c: org.apache.poi.ss.usermodel.Cell?): String {
         if (c == null) return ""
-        return when (c.cellType) {
-            CellType.NUMERIC -> {
-                if (DateUtil.isCellDateFormatted(c)) c.dateCellValue.toString()
-                else {
-                    val d = c.numericCellValue
-                    if (d == d.toLong().toDouble()) d.toLong().toString() else d.toString()
-                }
+        return try {
+            when (c.cellType) {
+                CellType.NUMERIC -> formatNumeric(c)
+                CellType.STRING -> c.stringCellValue ?: ""
+                CellType.FORMULA -> formatFormula(c)
+                CellType.BOOLEAN -> c.booleanCellValue.toString()
+                CellType.ERROR -> errorText(c)
+                CellType.BLANK -> ""
+                else -> ""
             }
-            CellType.FORMULA -> c.cellFormula ?: ""
+        } catch (e: Exception) {
+            // 兜底：极端情况下也不让整张表导入失败
+            try { formatter.formatCellValue(c) ?: "" } catch (_: Exception) { "" }
+        }
+    }
+
+    private fun formatNumeric(c: org.apache.poi.ss.usermodel.Cell): String {
+        if (DateUtil.isCellDateFormatted(c)) {
+            return c.dateCellValue?.toString() ?: ""
+        }
+        val d = c.numericCellValue
+        return if (d.isFinite() && d == d.toLong().toDouble()) d.toLong().toString() else d.toString()
+    }
+
+    private fun formatFormula(c: org.apache.poi.ss.usermodel.Cell): String {
+        return when (c.cachedFormulaResultType) {
+            CellType.NUMERIC -> formatNumeric(c)
+            CellType.STRING -> c.stringCellValue ?: ""
             CellType.BOOLEAN -> c.booleanCellValue.toString()
-            else -> c.stringCellValue ?: ""
+            CellType.ERROR -> errorText(c)
+            else -> ""
+        }
+    }
+
+    private fun errorText(c: org.apache.poi.ss.usermodel.Cell): String {
+        return try {
+            // 字面量错误单元格可直接取错误码并转成 "#DIV/0!" 等文本
+            FormulaError.forInt(c.errorCellValue.toInt()).string
+        } catch (_: Exception) {
+            // 公式单元格的缓存错误结果取不到错误码，用 DataFormatter 兜底
+            try { formatter.formatCellValue(c) ?: "ERROR" } catch (_: Exception) { "ERROR" }
         }
     }
 }
