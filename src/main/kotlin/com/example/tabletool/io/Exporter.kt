@@ -1,7 +1,6 @@
 package com.example.tabletool.io
 
 import com.example.tabletool.model.Sheet
-import com.github.doyaaaaaken.kotlin_csv.writer.CsvWriter
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
 
@@ -43,10 +42,7 @@ object Exporter {
     }
 
     private fun exportCsv(s: Sheet, out: File) {
-        CsvWriter().open(out) {
-            writeRow(s.headers)
-            s.rows.forEach { writeRow(it) }
-        }
+        CsvUtil.writeAll(out, listOf(s.headers) + s.rows)
     }
 
     private fun uniqueSheetName(wb: XSSFWorkbook, base: String): String {
