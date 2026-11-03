@@ -9,14 +9,15 @@ enum class CrossMode { INTERSECT, UNION }
  * - INTERSECT：以第一张表为基准，保留"关键列的值在所选所有表中都出现"的行（取交集）。
  * - UNION：把所有所选表的行合并去重（取并集）。
  */
-fun crossSheetFilter(sheets: List<Sheet>, keyColIndex: Int, mode: CrossMode): Sheet {
+fun crossSheetFilter(sheets: List<Sheet>, keyColName: String, mode: CrossMode): Sheet {
     require(sheets.isNotEmpty()) { "至少需要选择一张表" }
     val first = sheets.first()
-    val keySets = sheets.map { s -> s.rows.map { it.getOrNull(keyColIndex) ?: "" }.toSet() }
+    val keyIdx = sheets.map { s -> val i = s.headers.indexOf(keyColName); if (i < 0) 0 else i }
+    val keySets = sheets.mapIndexed { si, s -> s.rows.map { it.getOrNull(keyIdx[si]) ?: "" }.toSet() }
     return when (mode) {
         CrossMode.INTERSECT -> {
             val common = keySets.reduce { a, b -> a.intersect(b) }
-            val kept = first.rows.filter { (it.getOrNull(keyColIndex) ?: "") in common }
+            val kept = first.rows.filter { (it.getOrNull(keyIdx[0]) ?: "") in common }
             Sheet(first.fileName, "重合(交集)_${first.sheetName}", first.headers, kept)
         }
         CrossMode.UNION -> {
