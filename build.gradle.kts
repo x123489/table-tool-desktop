@@ -25,7 +25,7 @@ compose.desktop {
     application {
         mainClass = "com.example.tabletool.MainKt"
         nativeDistributions {
-            targetFormats(TargetFormat.Deb, TargetFormat.Msi)
+            targetFormats(TargetFormat.Deb)
             packageName = "table-tool"
             packageVersion = "1.0.0"
             description = "表格拆分 / 合并 / 筛选工具（单机版）"
@@ -37,7 +37,7 @@ compose.desktop {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs += listOf(
-            "-Xopt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
         )
     }
 }
