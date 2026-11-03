@@ -19,6 +19,12 @@ jobs:
           Invoke-WebRequest -Uri "https://services.gradle.org/distributions/gradle-8.7-bin.zip" -OutFile "$env:TEMP\gradle.zip"
           Expand-Archive -Path "$env:TEMP\gradle.zip" -DestinationPath "C:\gradle"
           Add-Content -Path $env:GITHUB_PATH -Value "C:\gradle\gradle-8.7\bin"
+      - name: Install WiX (required for MSI)
+        shell: pwsh
+        run: |
+          choco install wixtoolset -y --no-progress
+          $wix = "C:\Program Files (x86)\WiX Toolset v3.11\bin"
+          if (Test-Path $wix) { Add-Content -Path $env:GITHUB_PATH -Value $wix }
       - name: Build package
         run: gradle package --no-daemon
       - name: Upload Windows artifact
