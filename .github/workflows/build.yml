@@ -38,10 +38,14 @@ jobs:
           Compress-Archive -Path "$src/*" -DestinationPath "build/dist/table-tool-windows.zip" -Force
           # 2) 单文件自解压 EXE（双击即用，免安装）
           try {
-            if (-not (Test-Path "$env:ProgramFiles\7-Zip\7z.exe")) { choco install 7zip -y | Out-Null }
             $7z = "$env:ProgramFiles\7-Zip\7z.exe"
             $stub = "$env:ProgramFiles\7-Zip\7zS.sfx"
-            if (Test-Path $7z) {
+            if (-not ((Test-Path $7z) -and (Test-Path $stub))) {
+              choco install 7zip -y | Out-Null
+              $7z = "$env:ProgramFiles\7-Zip\7z.exe"
+              $stub = "$env:ProgramFiles\7-Zip\7zS.sfx"
+            }
+            if ((Test-Path $7z) -and (Test-Path $stub)) {
               & $7z a -t7z -mx=5 build/table-tool.7z "build/compose/binaries/main/app/table-tool"
               $config = ';!@Install@!UTF-8!' + [Environment]::NewLine + 'Title="TableTool"' + [Environment]::NewLine + 'ExtractDialog=0' + [Environment]::NewLine + 'OverwriteMode=1' + [Environment]::NewLine + 'InstallPath="%TEMP%\table-tool-portable"' + [Environment]::NewLine + 'RunProgram="table-tool\table-tool.exe"' + [Environment]::NewLine + ';!@InstallEnd@!'
               [System.IO.File]::WriteAllText("build/sfx_config.txt", $config, [System.Text.UTF8Encoding]::new($true))
