@@ -20,7 +20,12 @@ jobs:
           Expand-Archive -Path "$env:TEMP\gradle.zip" -DestinationPath "C:\gradle"
           Add-Content -Path $env:GITHUB_PATH -Value "C:\gradle\gradle-8.7\bin"
       - name: Build portable distribution
-        run: gradle createDistributable --no-daemon
+        run: gradle createDistributable --no-daemon --stacktrace
+      - name: Dump jpackage logs on failure
+        if: failure()
+        shell: pwsh
+        run: |
+          Get-ChildItem build/compose/logs -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "=== $($_.FullName) ==="; Get-Content $_.FullName -ErrorAction SilentlyContinue }
       - name: Zip Windows artifact
         shell: pwsh
         run: |
