@@ -30,6 +30,9 @@ compose.desktop {
             packageVersion = "1.0.0"
             description = "表格拆分 / 合并 / 筛选工具（单机版）"
             copyright = "Copyright (c) 2026"
+            windows {
+                iconFile.set(project.file("src/main/resources/icon.ico"))
+            }
         }
     }
 }
