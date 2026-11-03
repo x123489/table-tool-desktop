@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -96,11 +97,11 @@ fun FilterPanel(
             var ci by remember(c, sheet) { mutableStateOf(c.colIndex) }
             var mi by remember(c) { mutableStateOf(MatchType.values().indexOf(c.match)) }
             var kw by remember(c) { mutableStateOf(c.keyword) }
-            if (sheet != null) ColumnSelector(sheet, ci) { ci = it; onConditions(conditions.mapIndexed { i, x -> if (i == idx) x.copy(colIndex = it) else x }) }
+            if (sheet != null) ColumnSelector(sheet, ci) { newCi -> ci = newCi; onConditions(conditions.mapIndexed { i, x -> if (i == idx) x.copy(colIndex = newCi) else x }) }
             LabeledDropdown(label = "匹配", options = MatchType.values().map { MATCH_LABELS[it]!! }, selected = mi) {
-                mi = it; onConditions(conditions.mapIndexed { i, x -> if (i == idx) x.copy(match = MatchType.values()[it]) else x })
+                newMi -> mi = newMi; onConditions(conditions.mapIndexed { i, x -> if (i == idx) x.copy(match = MatchType.values()[newMi]) else x })
             }
-            OutlinedTextField(value = kw, onValueChange = { kw = it; onConditions(conditions.mapIndexed { i, x -> if (i == idx) x.copy(keyword = it) else x }) }, singleLine = true, modifier = Modifier.weight(1f).padding(start = 4.dp), placeholder = { Text("关键字") }, textStyle = TextStyle(fontSize = 12.sp))
+            OutlinedTextField(value = kw, onValueChange = { kw = it; onConditions(conditions.mapIndexed { i, x -> if (i == idx) x.copy(keyword = kw) else x }) }, singleLine = true, modifier = Modifier.weight(1f).padding(start = 4.dp), placeholder = { Text("关键字") }, textStyle = TextStyle(fontSize = 12.sp))
             TextButton(onClick = { onConditions(conditions.filterIndexed { i, _ -> i != idx }) }) { Text("×", color = Color(0xFFD32F2F)) }
         }
         Spacer(Modifier.height(4.dp))
