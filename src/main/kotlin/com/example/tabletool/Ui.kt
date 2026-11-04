@@ -89,7 +89,7 @@ fun FilterPanel(
             var ci by remember(c, sheet) { mutableStateOf(c.colIndex) }
             var mi by remember(c) { mutableStateOf(MatchType.values().indexOf(c.match)) }
             var kw by remember(c) { mutableStateOf(c.keyword) }
-            if (sheet != null) ColumnSelector(sheet, ci) { newCi -> ci = newCi; onConditions(conditions.mapIndexed { i, x -> if (i == idx) x.copy(colIndex = newCi) else x }) }
+            if (sheet != null) ColumnSelector(sheet = sheet, value = ci, onPick = { newCi -> ci = newCi; onConditions(conditions.mapIndexed { i, x -> if (i == idx) x.copy(colIndex = newCi) else x }) }) }
             LabeledDropdown(label = "匹配", options = MatchType.values().map { MATCH_LABELS[it]!! }, selected = mi) {
                 newMi -> mi = newMi; onConditions(conditions.mapIndexed { i, x -> if (i == idx) x.copy(match = MatchType.values()[newMi]) else x })
             }
