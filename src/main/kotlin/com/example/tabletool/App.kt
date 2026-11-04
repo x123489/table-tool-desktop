@@ -59,7 +59,7 @@ import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
 
-internal enum class Mode(
+enum class Mode(
     val label: String,
     val multiSheet: Boolean = false,
     val needsKeyCol: Boolean = false
@@ -74,7 +74,7 @@ internal enum class Mode(
     BATCH_SPLIT("批量：对所有表拆分")
 }
 
-internal val MATCH_LABELS = mapOf(
+val MATCH_LABELS = mapOf(
     MatchType.CONTAINS to "包含",
     MatchType.EQUALS to "等于",
     MatchType.STARTS to "开头是",
