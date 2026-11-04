@@ -26,7 +26,7 @@ import com.example.tabletool.ops.CrossMode
 import com.example.tabletool.ops.MatchType
 
 @Composable
-fun OperationPanel(
+fun ColumnScope.OperationPanel(
     mode: Mode,
     onModeChange: (Mode) -> Unit,
     conditions: List<com.example.tabletool.ops.Condition>,
